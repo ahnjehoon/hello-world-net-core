@@ -63,6 +63,48 @@ namespace API.Controllers
 			return Ok();
 		}
 
+		[HttpPost("[action]")]
+		public async Task<IActionResult> CreateV2(MemberCreateRequestV2 param)
+		{
+			var isDuplicated = await _context.Member.AnyAsync(c => c.Account == param.Account);
+			if (isDuplicated) return StatusCode(400, "MEMBER ALREADY EXIST");
+			var newMember = new Member
+			{
+				Account = param.Account,
+				Password = param.Password,
+				Name = param.Name
+			};
+			param.Board?.ForEach(board =>
+			{
+				var boardRegister = _context.Member.FirstOrDefault(c => c.Account == board.Register);
+				var newBoard = new Board
+				{
+					Title = board.Title,
+					Content = board.Content,
+					Register = board.Register,
+					RegisterDate = DateTime.Now,
+					RegisterNavigation = boardRegister ?? newMember
+				};
+				board.Comment?.ForEach(comment =>
+				{
+					var commentRegister = _context.Member.FirstOrDefault(c => c.Account == comment.Register);
+					var newComment = new Comment
+					{
+						Content = comment.Content,
+						Register = comment.Register,
+						RegisterDate = DateTime.Now,
+						Board = newBoard,
+						RegisterNavigation = commentRegister ?? newMember
+					};
+					newBoard.Comment.Add(newComment);
+				});
+				newMember.Board.Add(newBoard);
+			});
+			await _context.Member.AddAsync(newMember);
+			await _context.SaveChangesAsync();
+			return Ok();
+		}
+
 		[HttpPut("{account}")]
 		public async Task<IActionResult> Update(string account, MemberUpdateRequest param)
 		{
