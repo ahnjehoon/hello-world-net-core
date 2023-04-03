@@ -20,6 +20,8 @@ namespace API.Controllers
 		public async Task<IActionResult> Get()
 		{
 			var result = await _context.Board
+				.Include(t => t.RegisterNavigation)
+				.Include(t => t.Comment)
 				.AsNoTracking()
 				.ToListAsync();
 			return Ok(result);
@@ -35,6 +37,16 @@ namespace API.Controllers
 		[HttpPost]
 		public async Task<IActionResult> Post(BoardCreateRequest param)
 		{
+			var member = _context.Member.FirstOrDefault(c => c.Account == param.Register);
+			if (member == null) return StatusCode(400, "NO MEMBER");
+			var newBoard = new Board
+			{
+				Title = param.Title,
+				Content = param.Content,
+				Register = param.Register,
+				RegisterDate = DateTime.Now,
+				RegisterNavigation = member
+			};
 			await _context.Board.AddAsync(newBoard);
 			await _context.SaveChangesAsync();
 			return Ok();
