@@ -1,5 +1,5 @@
 ﻿using API.Entities;
-using API.SeedData;
+using API.Utils;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Data
@@ -23,19 +23,37 @@ namespace API.Data
 			{
 				if (await _context.Member.AnyAsync() == false)
 				{
-					await _context.Member.AddRangeAsync(new SeedMember().GetSeed());
+					var tempData = SeedHelper.SeedData<Member>(nameof(Member) + ".json");
+					if (tempData == null)
+					{
+						_logger.LogInformation("SEED FILE NOT EXIST OR NULL", nameof(Member));
+						return;
+					}
+					await _context.Member.AddRangeAsync(tempData);
 					_logger.LogInformation("SEED {TYPE} SUCCESS", nameof(Member));
 				}
 
 				if (await _context.Board.AnyAsync() == false)
 				{
-					await _context.Board.AddRangeAsync(new SeedBoard().GetData());
+					var tempData = SeedHelper.SeedData<Board>(nameof(Board) + ".json");
+					if (tempData == null)
+					{
+						_logger.LogInformation("SEED FILE NOT EXIST OR NULL", nameof(Board));
+						return;
+					}
+					await _context.Board.AddRangeAsync(tempData);
 					_logger.LogInformation("SEED {TYPE} SUCCESS", nameof(Board));
 				}
 
 				if (await _context.Comment.AnyAsync() == false)
 				{
-					await _context.Comment.AddRangeAsync(new SeedComment().GetData());
+					var tempData = SeedHelper.SeedData<Comment>(nameof(Comment) + ".json");
+					if (tempData == null)
+					{
+						_logger.LogInformation("SEED FILE NOT EXIST OR NULL", nameof(Comment));
+						return;
+					}
+					await _context.Comment.AddRangeAsync(tempData);
 					_logger.LogInformation("SEED {TYPE} SUCCESS", nameof(Comment));
 				}
 				await _context.SaveChangesAsync();
