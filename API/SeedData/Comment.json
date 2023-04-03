@@ -1,0 +1,5 @@
+[
+ {  "BoardId": 1,  "Content": "사용자2가 작성한 댓글",  "Register": "account02"}
+,{  "BoardId": 1,  "Content": "사용자3가 작성한 댓글",  "Register": "account03"}
+,{  "BoardId": 1,  "Content": "사용자2가 작성한 두번째 댓글",  "Register": "account02"}
+]

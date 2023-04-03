@@ -9,6 +9,7 @@ var builder = WebApplication.CreateBuilder(args);
 // DbContext 등록
 string connectionString = builder.Configuration.GetConnectionString("SqlServer");
 builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(connectionString));
+builder.Services.AddScoped<ApplicationDbContextSeed>();
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -31,6 +32,9 @@ using (var scope = app.Services.CreateScope())
 	// DB가 생성되어 있지 않을 경우 자동 생성
 	if (!((RelationalDatabaseCreator)dbContext.GetService<IDatabaseCreator>()).Exists())
 		dbContext.Database.EnsureCreated();
+	// DATA 생성
+	var dbContextSeed = scope.ServiceProvider.GetRequiredService<ApplicationDbContextSeed>();
+	await dbContextSeed.SeedAsync();
 }
 
 // Configure the HTTP request pipeline.
