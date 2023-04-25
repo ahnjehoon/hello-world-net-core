@@ -1,4 +1,5 @@
 ﻿using API.Data;
+using API.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -62,6 +63,8 @@ builder.Services.AddSwaggerGen(options =>
 	});
 });
 
+// Services
+builder.Services.AddScoped<MemberService>();
 
 builder.Services.AddControllers().AddJsonOptions(options =>
 {

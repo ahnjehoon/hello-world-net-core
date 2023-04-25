@@ -1,6 +1,7 @@
 ﻿using API.Data;
 using API.Dto;
 using API.Entities;
+using API.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -19,19 +20,19 @@ namespace API.Controllers
 	{
 		private readonly ApplicationDbContext _context;
 		private readonly IConfiguration _configuration;
+		private readonly MemberService _memberService;
 
-		public AuthController(ApplicationDbContext context, IConfiguration configuration)
+		public AuthController(ApplicationDbContext context, IConfiguration configuration, MemberService memberService)
 		{
 			_context = context;
 			_configuration = configuration;
+			_memberService = memberService;
 		}
 
 		[HttpPost]
 		public async Task<IActionResult> Login([FromBody] LoginRequest param)
 		{
-			var member = await _context.Member.AsNoTracking()
-				.Where(c => c.Account == param.Account && c.Password == param.Password)
-				.FirstOrDefaultAsync();
+			var member = await _memberService.Login(param);
 			if (member == null) return BadRequest("ID OR PASSOWRD NOT COLLECT");
 
 			return Ok(CreateJwt(member));
@@ -39,7 +40,7 @@ namespace API.Controllers
 
 		private string CreateJwt(Member member)
 		{
-			JwtSecurityTokenHandler tokenHandler = new JwtSecurityTokenHandler();
+			JwtSecurityTokenHandler tokenHandler = new();
 			var key = Encoding.ASCII.GetBytes(_configuration["JwtKey"]);
 			var tokenDescriptor = new SecurityTokenDescriptor
 			{

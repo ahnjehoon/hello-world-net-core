@@ -1,4 +1,5 @@
 ﻿using API.Entities;
+using API.Services;
 using API.Utils;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,12 +10,14 @@ namespace API.Data
 		private readonly ILogger<ApplicationDbContextSeed> _logger;
 		private readonly IConfiguration _configuration;
 		private readonly ApplicationDbContext _context;
+		private readonly MemberService _memberService;
 
-		public ApplicationDbContextSeed(ILogger<ApplicationDbContextSeed> logger, IConfiguration configuration, ApplicationDbContext context)
+		public ApplicationDbContextSeed(ILogger<ApplicationDbContextSeed> logger, IConfiguration configuration, ApplicationDbContext context, MemberService memberService)
 		{
 			_logger = logger;
 			_configuration = configuration;
 			_context = context;
+			_memberService = memberService;
 		}
 
 		public async Task SeedAsync(int retry = 0)
@@ -29,7 +32,7 @@ namespace API.Data
 						_logger.LogInformation("SEED FILE NOT EXIST OR NULL", nameof(Member));
 						return;
 					}
-					await _context.Member.AddRangeAsync(tempData);
+					await _memberService.Create(tempData);
 					_logger.LogInformation("SEED {TYPE} SUCCESS", nameof(Member));
 				}
 
