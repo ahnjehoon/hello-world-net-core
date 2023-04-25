@@ -9,19 +9,17 @@ using System.Text.Json.Serialization;
 var builder = WebApplication.CreateBuilder(args);
 
 // DbContext 등록
+// SQL SERVER를 직접 사용하고 싶을 때
 //string connectionString = builder.Configuration.GetConnectionString("SqlServer");
 //builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(connectionString));
+// IN-MEMORY DATABASE 사용
 builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseInMemoryDatabase("hello-database"));
 builder.Services.AddScoped<ApplicationDbContextSeed>();
-
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-//builder.Services.AddEndpointsApiExplorer();
-//builder.Services.AddSwaggerGen();
+
 // JWT
 builder.Services
-	//.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-	.AddAuthentication()
+	.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 	.AddJwtBearer(x =>
 	{
 		x.TokenValidationParameters = new TokenValidationParameters
@@ -32,11 +30,11 @@ builder.Services
 			ValidateAudience = false,
 			ValidateLifetime = true
 		};
-		x.RequireHttpsMetadata= false;
+		x.RequireHttpsMetadata = false;
 	});
 
 // SWAGGER
-var securitySchemeName = "Authorization";
+var securitySchemeName = "ApiKey";
 builder.Services.AddSwaggerGen(options =>
 {
 	options.SwaggerDoc("v1", new OpenApiInfo
@@ -47,9 +45,9 @@ builder.Services.AddSwaggerGen(options =>
 
 	options.AddSecurityDefinition(securitySchemeName, new OpenApiSecurityScheme
 	{
-		Name = securitySchemeName,
+		Name = "Authorization",
 		Type = SecuritySchemeType.ApiKey,
-		In = ParameterLocation.Header
+		In = ParameterLocation.Header,
 	});
 
 	options.AddSecurityRequirement(new OpenApiSecurityRequirement
@@ -57,25 +55,18 @@ builder.Services.AddSwaggerGen(options =>
 		{
 			new OpenApiSecurityScheme
 			{
-				Reference = new OpenApiReference
-				{
-					Type = ReferenceType.SecurityScheme,
-					Id = securitySchemeName
-				}
+				Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = securitySchemeName }
 			},
 			Array.Empty<string>()
 		}
 	});
 });
 
-// TEST 필요
-//builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
 	options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
 	options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault;
-	//options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
 });
 
 var app = builder.Build();
